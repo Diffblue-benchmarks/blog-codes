@@ -1,0 +1,286 @@
+buildCmd: cd ./stanfordnlp; mvn -e -X -Dmaven.test.skip=true compile
+testCmd: true
+lineLength: 4096
+skipVerification: true
+cbmcArguments:
+  # Do not generate coverage comments on generated tests.
+  java-generate-no-comments: true
+phases:
+  -
+  #Phase 0 PRETTY AND SIMPLE - Simple models, quick cover, pretty Tests, Do Not Test Private Method Directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [ private ]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # Instrument the file as opposed to the function only
+      cover-only: file
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+  -
+  #Phase 1 PRETTY AND COMPLEX - Standard models, longer run time, pretty tests, Do Not Test Private Method Directly
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [ private ]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+  #Phase 2 Simple and Private Directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+      # If the logs contain output of the following then proceed to phase X
+    nextPhase:
+      # If the function is not analysable then do not pass onto the next phase
+      not_analyzed: null
+  -
+  #Phase 3 Complex and Private Directly
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 3000
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Set string input value  
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c"]
+  -
+  #Phase 4 EXCEPTIONS
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+  -
+    #PHASE 5 Big numbers and less contraints on inputs 
+    timeout: 300
+    cbmcArguments:
+      # Use the standard models library.
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: false
+      # Constrain the size of arrays created in the analyzed code.
+      java-max-vla-length: 10000
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 100
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 6
+units:
+# Target TGF: 195.3
+#  >methods=2
+#  >complexity=217
+#  >construction=9.0
+#  >dependency=0.1
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/tokensregex/BasicNer.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/tokensregex/BasicNer.java
+# Target TGF: 173.25
+#  >methods=2
+#  >complexity=77
+#  >construction=9.0
+#  >dependency=0.25
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/JavaClient.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/JavaClient.java
+   - dir: stanfordnlp/target/classes
+     file: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.java
+# Target TGF: 195.3
+#  >methods=2
+#  >complexity=217
+#  >construction=9.0
+#  >dependency=0.1
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/tokensregex/MultiStepNER.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/tokensregex/MultiStepNER.java
+# Target TGF: 1134.0
+#  >methods=2
+#  >complexity=126
+#  >construction=9.0
+#  >dependency=1.0
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/sentiment/SentimentAnalysis.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/sentiment/SentimentAnalysis.java
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/sentiment/SentimentResult.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/sentiment/SentimentResult.java
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/sentiment/SentimentAnalyzer.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/sentiment/SentimentAnalyzer.java
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/sentiment/SentimentClassification.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/sentiment/SentimentClassification.java
+# Target TGF: 195.3
+#  >methods=2
+#  >complexity=217
+#  >construction=9.0
+#  >dependency=0.1
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/tokensregex/BasicRelationExtraction.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/tokensregex/BasicRelationExtraction.java
+# Target TGF: 440.233333333
+#  >methods=27
+#  >complexity=551
+#  >construction=13.75
+#  >dependency=3.73333333333
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.java
+   - dir: stanfordnlp/target/classes
+     file: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient$1.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.java
+   - dir: stanfordnlp/target/classes
+     file: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient$BackendScheduler.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.java
+   - dir: stanfordnlp/target/classes
+     file: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient$Backend.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: edu/stanford/nlp/pipeline/MultiLangsStanfordCoreNLPClient.java
+# Target TGF: 196.2
+#  >methods=2
+#  >complexity=109
+#  >construction=9.0
+#  >dependency=0.2
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/tokensregex/TokensRegexAnnotatorDemo.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/tokensregex/TokensRegexAnnotatorDemo.java
+# Target TGF: 180.0
+#  >methods=2
+#  >complexity=140
+#  >construction=9.0
+#  >dependency=0.142857142857
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/PipelineDemo.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/PipelineDemo.java
+# Target TGF: 240.75
+#  >methods=2
+#  >complexity=107
+#  >construction=9.0
+#  >dependency=0.25
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/CorefExample.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/CorefExample.java
+# Target TGF: 195.3
+#  >methods=2
+#  >complexity=217
+#  >construction=9.0
+#  >dependency=0.1
+ - target:
+   - dir: stanfordnlp/target/classes
+     file: com/fancyerii/blog/stanfordnlp/tokensregex/ExtractQuotes.class
+     sourceDir: stanfordnlp/src/main/java
+     sourceFile: com/fancyerii/blog/stanfordnlp/tokensregex/ExtractQuotes.java
